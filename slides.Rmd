@@ -1,6 +1,6 @@
 ---
 title: "MODULE NAME"
-subtitle: "Social Media and Web Analytics"
+subtitle: "Digital and Social Media Strategies"
 author: "Lachlan Deer"
 institute: "Tilburg University"
 date: "Updated: `r Sys.Date()`"
@@ -35,11 +35,11 @@ course content here
 Suggested Citation:
 
 ```{r, engine='out', eval = FALSE}
-@misc{ddw2021,
-      title={"Social Media and Web Analytics: Lecture Slide Template"},
+@misc{deerdsms2022,
+      title={"Digital and Social Media Strategies: Lecture Slide Template"},
       author={Lachlan Deer},
-      year={2021},
-      url = "https://github.com/tisem-digital-marketing/smwa-lecture-template"
+      year={2022},
+      url = "https://github.com/tisem-digital-marketing/dsms-lecture-template"
 }
 ```
 
