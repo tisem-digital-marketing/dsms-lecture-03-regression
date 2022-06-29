@@ -1,20 +1,20 @@
-# Social Media and Web Analytics: LECTURE NAME
+# Digital and Social Media Strategies: LECTURE NAME
 
-[![lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
-[![lifecycle](https://img.shields.io/badge/version-2021-red.svg)]()
+[![lifecycle](https://img.shields.io/badge/lifecycle-stable-green.svg)](https://www.tidyverse.org/lifecycle/#maturing)
+[![lifecycle](https://img.shields.io/badge/version-2022-red.svg)]()
 
 **Things with `XXX` need updating**
 
 ## Meta-Information
 
 * Module Maintainer: Lachlan Deer (`@lachlandeer`)
-* Course: [Social Media and Web Analytics](https://tisem-digital-marketing.github.io/XXX-smwa)
+* Course: [Digital and Social Media Strategies](https://tisem-digital-marketing.github.io/XXX-dsms)
 * Institute: Dept of Marketing, Tilburg University
-* Current Version: [XXX edition](https://tisem-digital-marketing.github.io/2021-smwa)
+* Current Version: [XXX edition](https://tisem-digital-marketing.github.io/XXXX-dsms)
 
 ## Introduction
 
-Slides for the XXX of Social Media and Web Analytics
+Slides for the XXX of Digital and Social Media Strategies
 
 Slides are a xaringan presentation and are built to html and pdf using the Snakemake workflow management system.
 I also manage R's package dependencies with `renv`.
@@ -94,17 +94,17 @@ This will install all the packages we need. It may take a while.
 
 ## Suggested Citation (for the Module)
 
-Deer, Lachlan and de With, Hendrik. 2021. Social Media and Web Analytics: XXX.
+Deer, Lachlan. 2022. Digital and Social Media Strategies: XXX.
 Tilburg University.
-url = "https://github.com/tisem-digital-marketing/smwa-lecture-XXX"
+url = "https://github.com/tisem-digital-marketing/dsms-lecture-XXX"
 
 ## Suggested Citation (Template)
 
 ```{r, engine='out', eval = FALSE}
-@misc{smwa-lecture-template,
-      title={"Social Media and Web Analytics: Lecture Slide Template"},
+@misc{deerdsms2022,
+      title={"Digital and Social Media Strategies: Lecture Slide Template"},
       author={Lachlan Deer},
-      year={2021},
-      url = "https://github.com/tisem-digital-marketing/smwa-lecture-template"
+      year={2022},
+      url = "https://github.com/tisem-digital-marketing/dsms-lecture-template"
 }
 ```
