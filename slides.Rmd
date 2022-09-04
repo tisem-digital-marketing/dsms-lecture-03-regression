@@ -18,7 +18,7 @@ class: font160
 # Learning Goals for this Week
 
 * Interpret regression output from single- and multivariable linear regressions 
-* Intrepret linear regression coefficients from single- and multivariable linear regressions
+* Interpret linear regression coefficients from single- and multivariable linear regressions
 * Explain why linear regression coefficients cannot always be interpreted causally
 * Interpret linear regression estimates from the analysis of A/B tests
 
