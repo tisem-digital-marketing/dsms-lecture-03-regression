@@ -1,5 +1,5 @@
 ---
-title: "MODULE NAME"
+title: "A (Re-)Introduction to Linear Regression"
 subtitle: "Digital and Social Media Strategies"
 author: "Lachlan Deer"
 institute: "Tilburg University"
@@ -13,21 +13,479 @@ output:
       highlightLines: true
       countIncrementalSlides: false
 ---
-class: font200
+class: font160
 
 # Learning Goals for this Week
 
-TBD
+* Interpret regression output from single- and multivariable linear regressions 
+* Intrepret linear regression coefficients from single- and multivariable linear regressions
+* Explain why linear regression coefficients cannot always be interpreted causally
+* Interpret linear regression estimates from the analysis of A/B tests
 
 ---
 class: inverse, center, middle
 
-# Section XX
+# Simple Linear Regression: A Recap
 
 ---
-# Slide Title 
+# Example: Orange Juice
 
-course content here
+```{r, echo = FALSE, fig.align = "center", out.width="70%"}
+url <- "https://parade.com/.image/t_share/MTkwNTgwODY0NjExMTk4MDc3/is-orange-juice-good-for-you-jpg.jpg"
+knitr::include_graphics(url)
+```
+
+* Three Brands: Tropicana, Minute Maid and Dominicks 
+* 83 Chicagoland Stores 
+* Data on price, sales (quantity) and whether promoted
+* Want to know the price elasticity of demand. How does this change when on promotion?
+
+```{r, echo = FALSE, message = FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(broom)
+
+oj <- read_csv("data/oj.csv")
+```
+
+---
+# The Data: A Glimpse
+
+```{r, echo = FALSE}
+head(oj, n = 10)
+```
+
+---
+# The Juice: Price, Brand and Sales 
+
+.pull-left[
+```{r, echo = FALSE}
+oj %>%
+  ggplot() +
+  geom_boxplot(
+    aes(x = brand, y = price, fill = brand)
+  ) +
+  theme_bw()
+```
+]
+
+.pull-right[
+```{r, echo = FALSE}
+oj %>%
+  ggplot() +
+  geom_point(
+    aes(x = log(sales/1e3), y = log(price), color = brand),
+    alpha = 0.5
+  ) +
+  theme_bw()
+```
+
+]
+
+**Each brand occupies a well defined price range. Sales decrease with price**
+
+---
+# Simple Linear Regression 
+
+$$Sales_i = \beta_0 + \beta_1 price_i + \varepsilon_i$$
+
+```{r, echo = FALSE}
+summary(lm(sales/1e3 ~ price, data = oj))
+```
+
+**In class activity:** explain this output & interpret coefficients
+
+---
+# Logarithmic Transformations I
+
+$$\log(Sales)_i = \beta_0 + \beta_1 price_i + \varepsilon_i$$
+
+
+```{r, echo = FALSE}
+tidy(lm(log(sales) ~ price, data = oj))
+```
+
+**Coefficient Interpretation** (in general): 
+
+On average, a change in X by one unit, $\Delta X=1$, is associated with a $(\exp(\beta_1) - 1)*100$ % change in Y
+
+* Remark: for small $\beta_1$, $(\exp(\beta_1) - 1) \approx \beta_1$ so often you will see an interpretation that reads straight from $\beta_1$ 
+
+**Coefficient Interpretation** (this example): 
+
+
+---
+# Logarithmic Transformations II
+
+$$Sales_i = \beta_0 + \beta_1 \log(price_i) + \varepsilon_i$$
+
+```{r, echo = FALSE}
+tidy(lm(sales/1e3 ~ log(price), data = oj))
+```
+
+**Coefficient Interpretation** (in general): 
+
+On average, a 1% change in X is associated with a change in Y of $0.01 \times \beta_1$
+
+**Coefficient Interpretation** (this example): 
+
+
+---
+# Logarithmic Transformations III
+
+$$\log(Sales)_i = \beta_0 + \beta_1 \log(price_i) + \varepsilon_i$$
+
+Remark: Sales in 000s.
+
+```{r, echo = FALSE}
+tidy(lm(log(sales) ~ log(price), data = oj))
+```
+
+**Coefficient Interpretation** (in general): 
+
+On average, a 1% change in X is associated with a change in $\beta_1$ % change in Y 
+  * $\beta_1$ is the elasticity of Y with respect to X
+
+**Coefficient Interpretation** (this example): 
+
+---
+class: inverse, center, middle
+# Multivariable Regression 
+
+---
+# Multivariable Regression: One Control
+
+$$Sales_i = \beta_0 + \beta_1 price_i + \beta_2 \text{promotion}_i + \varepsilon_i$$
+
+
+```{r, echo = FALSE}
+summary(lm(sales ~ price + feat, data = oj))
+```
+
+---
+# Multivariable Regression: One Control II
+
+$$\log(Sales)_i = \beta_0 + \beta_1 \log(price_i) + \beta_2 \text{On Promotion}_i + \varepsilon_i$$
+
+```{r, echo = FALSE}
+summary(lm(log(sales) ~ log(price) + feat, data = oj))
+```
+
+---
+# Multivariable Regression: Many Controls
+
+$$
+\begin{aligned}
+\log(Sales)_i = \beta_0 &+ \beta_1 \log(price_i) + \beta_2 \text{On Promotion}_i + \\ 
+                        &\beta_3 \text{Tropicana}_i  + \beta_4 \text{Minute Maid}_i + \varepsilon_i
+\end{aligned}
+$$
+
+```{r, echo = FALSE}
+summary(lm(log(sales) ~ log(price) + feat + brand, data = oj))
+```
+
+---
+# Interaction Effects 
+
+Beyond additive effects: **variables change how others act on $y$**
+
+An **interaction term** is the product of two covariates:
+
+$$y_i = \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + \beta_3 x_{i3} + \beta_{2k} x_{i2} \times x_{ik} + \varepsilon_i$$
+
+So that the effect on $y$ of a unit increase in $x_2$ is:
+
+$\beta_2 + \beta_{2k}x_{ik}$
+
+$\implies$ **it depends on $x_k$**
+
+Example: How do promotions affect price sensitivity?
+
+---
+# Interaction Effects
+
+```{r, echo = FALSE}
+tidy(lm(log(sales) ~ log(price)*feat + brand, data = oj))
+```
+
+---
+# Interpreting Interaction Effects
+
+$$
+\begin{aligned}
+\log(Sales)_i = \beta_0 &+ \beta_1 \log(price_i) + \beta_2 \text{On Promotion}_i \\
+                        &+ \beta_3 (\text{On Promotion}_i \times \log(price_i)) + \varepsilon_i
+\end{aligned}
+$$
+
+We observe: 
+
+* $\hat{\beta}_1$ = -2.34
+* $\hat{\beta}_3$ = -0.88
+
+$\implies$
+
+* Price elasticity when **not** on sale:
+* Price elasticity when on sale:
+
+On average, promotions make consumers more / less on price sensitive
+
+Does this make sense? Why?
+
+---
+class: inverse, center, middle
+
+# Linear Regression as Causal Effects
+
+---
+class: font160
+# Why Causality?
+
+* Many questions we want answers to are **causal**
+
+* When we talk about marketing, we often want to know why something happens 
+  * Did demand/revenue/... change because of <something> ?
+  * And by how much?
+
+* We also care about non-causal questions (prediction, descriptive evidence)
+  * But our comparative advantage should be causality
+
+---
+class: font160
+# Why Causality as a Marketing Analyst?
+
+* Causality should be a marketing analyst's **comparative advantage**
+  * Plenty of fields do statistics, many probably do it better
+  * Few fields worry about causality and the *why* questions the way we (should) do
+
+* We can design more effective marketing strategies if we can identify causal effects
+  * Which will generate a boost in KPIs
+
+* **Skill to acquire**: Understanding when to make causal claims and when not 
+  * Your value to a future employer sky rockets if you can do this well
+
+class: font130
+# The Difficulty of Causal Inference
+
+**Can we tell when correlation $\implies$ causation?** 
+
+* Answer 1: It's *hard*
+* Answer 2: It is possible, but we *need assumptions*
+
+What kind of assumptions?
+
+* "What would have beens" - i.e. (approximate) counterfactual outcomes
+* "As good as random" - i.e. no selection on unobservables 
+  * Known as "conditional independence"
+  * Intuition: Given some control variables, differences in the outcome variable we care about are only due to randomness
+    * No unobserved factors driving variation in variable of interest 
+
+Even then: 
+
+* At *best* we'll estimate an **average causal effect**
+
+---
+class: font160
+# Regression and Causality
+
+.center[Regression assumptions on their own] 
+
+$$
+\neq \quad \text{ causal interpretations of } \beta
+$$
+
+* **Regression assumptions**: Unbiasedness, Variance of estimates 
+* "**Causal Inference assumptions**": Can an unbiased estimate be interpreted causally
+  1. Valid counterfactual outcomes
+  2. Conditional independence 
+
+Note: Cannot test these assumptions 'statistically'
+
+---
+class: font140
+# Experiments in Marketing Analytics
+
+Recent trend: use **'experiments' to estimate causal effects** 
+
+* Why? Clear counterfactual outcomes, reasonable to assume conditional independence
+
+Experiments in Marketing!? 
+
+Yes. Two kinds ...
+
+* **Randomised Control Trial (RCT)**
+  * Researcher randomly assigns observational units to treatment group, control group 
+* **Natural Experiments / Quasi-Experiments**
+  * "Nature" divides population into treatment and control in a way that is "as good as random"
+---
+class: inverse, center, middle
+
+# Linear Regression in A/B Tests
+
+---
+class: font120
+# Fast Food Promotions Redux 
+
+```{r, echo = FALSE, fig.align = "center", out.width="80%"}
+url <- "https://cdn.vox-cdn.com/thumbor/4mAGUkdlOUBL_INj2X2uZ53BR8U=/0x0:1100x825/1200x800/filters:focal(0x0:1100x825)/cdn.vox-cdn.com/uploads/chorus_image/image/46157824/american-burgers.0.0.jpg"
+knitr::include_graphics(url)
+```
+
+* New fast food item introduced to all stores 
+* Three different promotions used, managers care about sales 
+* Promotions randomly allocated to stores
+* Different promotion strategies may have different effectiveness  
+
+```{r, echo = FALSE, message = FALSE}
+library(readr)
+library(dplyr)
+library(janitor)
+
+all_data <- read_csv("data/WA_Marketing-Campaign.csv") %>%
+  clean_names() 
+
+two_promotion <- 
+  all_data %>%
+  filter(promotion != 3)
+```
+
+---
+class: font140
+# Causal Interpretations and Experiments 
+
+**Regression estimates from analysis of experiments have causal interpretations**
+
+Why? 
+
+* Counterfactual outcomes 
+* "As good as random" assignment to treatments
+  
+Regression estimates from experiments allow us to:
+
+* Test whether treatments have effects 
+* Estimate a magnitude of the effect sizes (and standard errors)
+  * Which our t-test and ANOVA didn't
+
+---
+class: font140
+# Two Promotion Comparison 
+
+$$\text{Sales}_i = \beta_0 + \beta_1 \text{Promotion Type 2} + \varepsilon_i$$
+
+```{r, echo = FALSE}
+simple_reg <- lm(sales_in_thousands ~ as.factor(promotion), data = two_promotion)
+summary(simple_reg)
+```
+
+---
+class: font140
+# Two Promotion Comparison 
+
+In class questions:
+
+* Why only an estimate of promotion 2 and not also promotion 1?
+* How to interpret this regression?
+
+---
+# Two Promotion Comparison with log Y
+
+$$log(\text{Sales}_i) = \beta_0 + \beta_1 \text{Promotion Type 2} + \varepsilon_i$$
+
+```{r, echo = FALSE}
+simple_reg <- lm(log(sales_in_thousands) ~ as.factor(promotion), data = two_promotion)
+summary(simple_reg)
+```
+
+---
+class: font140
+# Two Promotion Comparison with log Y
+
+In class questions:
+
+* How to interpret this regression?
+* Could we also take the log of the X variable?
+
+---
+# Three Promotion Comparison 
+
+$$\text{Sales}_i = \beta_0 + \beta_1 \text{Promotion Type 2} + \beta_2 \text{Promotion Type 3} + \varepsilon_i$$
+
+```{r, echo = FALSE}
+full_reg <- lm(sales_in_thousands ~ as.factor(promotion), data = all_data)
+summary(full_reg)
+```
+
+---
+class: font140
+# Three Promotion Comparison 
+
+In class questions:
+
+* Why only an estimate of promotion 2 and 3 and not also promotion 1?
+* How to interpret this regression?
+
+---
+# Three Promotion Comparison
+
+
+$$\text{Sales}_i = \beta_0 + \beta_1 \text{Promotion Type 2} + \beta_2 \text{Promotion Type 3} + \varepsilon_i$$
+
+```{r, echo = FALSE}
+full_reg <- lm(log(sales_in_thousands) ~ as.factor(promotion), data = all_data)
+summary(full_reg)
+```
+
+---
+class: font140
+# Three Promotion Comparison with Log Y
+
+In class questions:
+
+* How to interpret this regression?
+
+---
+class: font100
+# Three Promotions & Market Size Effects!
+
+*(If time)*
+
+What if we interact the effectiveness of promotions with the size of the market? 
+
+* Why would we want to do this?
+
+Results: 
+
+```{r, echo = FALSE}
+library(broom)
+interact_reg <- lm(log(sales_in_thousands) ~ as.factor(promotion):market_size, data = all_data)
+tidy(interact_reg)
+```
+
+---
+class: font140
+# Three Promotions & Market Size Effects!
+
+In class questions:
+
+* How to interpret this regression?
+
+---
+class: inverse, center, middle
+
+# Recap
+
+---
+class: font160
+# Recap
+
+* Simple Linear Regression estimates the association between an outcome variable and a dependent variable 
+* Multiple Linear Regression estimates the association between an outcome variable and multiple dependent variable
+* Regression estimates do not always have a causal interpretation 
+* Can use linear regression to estimate the effects of treatments on an outcome variable in an A/B test (experiment) setup
+* Linear regression estimates from A/B tests allow us to test for statistically significant differences across treatments ...
+* ... *and* provide estimate of the effect sizes across treatments
 
 ---
 # License & Citation
@@ -36,10 +494,10 @@ Suggested Citation:
 
 ```{r, engine='out', eval = FALSE}
 @misc{deerdsms2022,
-      title={"Digital and Social Media Strategies: Lecture Slide Template"},
+      title={"Digital and Social Media Strategies: A (Re-)Introduction to Linear Regression"},
       author={Lachlan Deer},
       year={2022},
-      url = "https://github.com/tisem-digital-marketing/dsms-lecture-template"
+      url = "https://github.com/tisem-digital-marketing/dsms-lecture-03-regression"
 }
 ```
 
