@@ -227,64 +227,14 @@ We observe:
 
 $\implies$
 
-* Price elasticity when **not** on sale:
-* Price elasticity when on sale:
+* Price elasticity when **not** on sale: $\beta_2$ -2.34
+* Price elasticity when on sale: $\beta_2 + \beta_3$ -3.22
 
 On average, promotions make consumers more / less on price sensitive
 
 Does this make sense? Why?
 
----
-class: inverse, center, middle
-
-# Linear Regression as Causal Effects
-
----
-class: font160
-# Why Causality?
-
-* Many questions we want answers to are **causal**
-
-* When we talk about marketing, we often want to know why something happens 
-  * Did demand/revenue/... change because of <something> ?
-  * And by how much?
-
-* We also care about non-causal questions (prediction, descriptive evidence)
-  * But our comparative advantage should be causality
-
----
-class: font160
-# Why Causality as a Marketing Analyst?
-
-* Causality should be a marketing analyst's **comparative advantage**
-  * Plenty of fields do statistics, many probably do it better
-  * Few fields worry about causality and the *why* questions the way we (should) do
-
-* We can design more effective marketing strategies if we can identify causal effects
-  * Which will generate a boost in KPIs
-
-* **Skill to acquire**: Understanding when to make causal claims and when not 
-  * Your value to a future employer sky rockets if you can do this well
-
-class: font130
-# The Difficulty of Causal Inference
-
-**Can we tell when correlation $\implies$ causation?** 
-
-* Answer 1: It's *hard*
-* Answer 2: It is possible, but we *need assumptions*
-
-What kind of assumptions?
-
-* "What would have beens" - i.e. (approximate) counterfactual outcomes
-* "As good as random" - i.e. no selection on unobservables 
-  * Known as "conditional independence"
-  * Intuition: Given some control variables, differences in the outcome variable we care about are only due to randomness
-    * No unobserved factors driving variation in variable of interest 
-
-Even then: 
-
-* At *best* we'll estimate an **average causal effect**
+(In class discussion)
 
 ---
 class: font160
@@ -297,28 +247,13 @@ $$
 $$
 
 * **Regression assumptions**: Unbiasedness, Variance of estimates 
-* "**Causal Inference assumptions**": Can an unbiased estimate be interpreted causally
-  1. Valid counterfactual outcomes
-  2. Conditional independence 
+* "**Causal Inference assumptions**": Can an unbiased estimate be interpreted causally? Yes if ...
+  1. No sample selection bias
+  2. "No lurking variables"
+  3. Valid counterfactual outcome to make comparisons
 
 Note: Cannot test these assumptions 'statistically'
 
----
-class: font140
-# Experiments in Marketing Analytics
-
-Recent trend: use **'experiments' to estimate causal effects** 
-
-* Why? Clear counterfactual outcomes, reasonable to assume conditional independence
-
-Experiments in Marketing!? 
-
-Yes. Two kinds ...
-
-* **Randomised Control Trial (RCT)**
-  * Researcher randomly assigns observational units to treatment group, control group 
-* **Natural Experiments / Quasi-Experiments**
-  * "Nature" divides population into treatment and control in a way that is "as good as random"
 ---
 class: inverse, center, middle
 
@@ -359,12 +294,14 @@ class: font140
 
 Why? 
 
-* Counterfactual outcomes 
-* "As good as random" assignment to treatments
+* Counterfactual outcomes - compare to an alternative promotion
+* "As good as random" assignment to treatments - lurking variables won't trouble us 
+* No sample selection bias ... analyst picked the sample to match the group they care about
   
 Regression estimates from experiments allow us to:
 
 * Test whether treatments have effects 
+  * Same as ANOVA or a t-test
 * Estimate a magnitude of the effect sizes (and standard errors)
   * Which our t-test and ANOVA didn't
 
@@ -388,6 +325,16 @@ In class questions:
 * Why only an estimate of promotion 2 and not also promotion 1?
 * How to interpret this regression?
 
+**Answers:** 
+
+* When a constant is included in the regression 1 categorical variable must be left out ...
+  - We have two categories since we have two treatments (promotion 1 and promotion 2)
+
+* $\beta_0$ is the average revenue for stores who were in Promotion 1
+* $\beta_0 + \beta1$ is the average revenue for stores who were in Promotion 2
+
+$\implies$ $\beta_1$ is the average difference in revenue (in 000s) between promotion 2 and promotion 1
+
 ---
 # Two Promotion Comparison with log Y
 
@@ -406,6 +353,15 @@ In class questions:
 
 * How to interpret this regression?
 * Could we also take the log of the X variable?
+
+**Answers**:
+
+* $\beta_0$ is the average log revenue for stores in promotion 1. Not very useful ...
+* $\beta$ is (approximately) the average percentage difference in revenue between promotion 2 and promotion 1. 
+  * $\exp{\hat{\beta_1}} - 1$ is the exact percentage difference...
+* We cannot take the log of `Promotion 2`. This variable is either zero (not in promotion 2) or 1 (in promotion 1)
+  - ... And log(0) is not defined
+  - ... Thats OK, the interpretation is still nice!
 
 ---
 # Three Promotion Comparison 
@@ -426,11 +382,20 @@ In class questions:
 * Why only an estimate of promotion 2 and 3 and not also promotion 1?
 * How to interpret this regression?
 
+**Answers**: 
+
+* Now have three categories, Promotion 1, Promotion 2, Promotion 3. Can only estimate two effects since $\beta_0$ captures the average of outcome variable for left out group.
+* $\beta_0$ is the average revenue for stores in Promotion 1
+* $\beta_1$ is the average difference in revenue for stores in Promotion 2 compared to Promotion 1.
+* $\beta_2$ is the average difference in revenue for stores in Promotion 3 compared to Promotion 1.
+* $\beta_3 - \beta_2$ is the average difference in revenue between stores in Promotion 3 compared to Promotion 2.
+
+
 ---
 # Three Promotion Comparison
 
 
-$$\text{Sales}_i = \beta_0 + \beta_1 \text{Promotion Type 2} + \beta_2 \text{Promotion Type 3} + \varepsilon_i$$
+$$\log(\text{Sales}_i) = \beta_0 + \beta_1 \text{Promotion Type 2} + \beta_2 \text{Promotion Type 3} + \varepsilon_i$$
 
 ```{r, echo = FALSE}
 full_reg <- lm(log(sales_in_thousands) ~ as.factor(promotion), data = all_data)
@@ -445,31 +410,12 @@ In class questions:
 
 * How to interpret this regression?
 
----
-class: font100
-# Three Promotions & Market Size Effects!
+**Answers:**
 
-*(If time)*
-
-What if we interact the effectiveness of promotions with the size of the market? 
-
-* Why would we want to do this?
-
-Results: 
-
-```{r, echo = FALSE}
-library(broom)
-interact_reg <- lm(log(sales_in_thousands) ~ as.factor(promotion):market_size, data = all_data)
-tidy(interact_reg)
-```
-
----
-class: font140
-# Three Promotions & Market Size Effects!
-
-In class questions:
-
-* How to interpret this regression?
+* $\beta_0$ is the average log revenue for stores in Promotion 1
+* $\beta_1$ is the average percentage difference in revenue for stores in Promotion 2 compared to Promotion 1.
+* $\beta_2$ is the average percentage difference in revenue for stores in Promotion 3 compared to Promotion 1.
+* $\beta_3 - \beta_2$ is the average percentage difference in revenue between stores in Promotion 3 compared to Promotion 2.
 
 ---
 class: inverse, center, middle
